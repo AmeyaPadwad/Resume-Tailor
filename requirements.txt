@@ -1,12 +1,7 @@
 langchain
-langchain_ollama
 langchain-groq
 langchain_community
-chromadb
 python-dotenv
-ipykernel
 streamlit
 pandas
 PyMuPDF
-nltk
-scikit-learn
