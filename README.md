@@ -27,6 +27,20 @@ Resume Tailor is a Streamlit-based desktop app that combines keyword matching an
 3. **Tracking tab** — View all saved applications, update their status, and read notes.
 4. **Referral Database tab** — Log contacts at companies you're applying to for easy reference.
 
+The data is stored in the following structure in the root directory:
+
+```
+root/
+└── data/
+    ├── resumes/
+    │   ├── master_resume.pdf
+    │   ├── tailored_resume_1.pdf
+    │   ├── tailored_resume_2.pdf
+    │   └── ...
+    ├── jobs.csv
+    └── referrals.csv
+```
+
 ---
 
 ## Setup
@@ -70,7 +84,7 @@ streamlit run app.py
 ### Add Job Description Tab
 
 - [ ] Clear text fields after form submission
-- [ ] Display LLM outputs (score, gaps, rewrites) in a clean, readable format
+- [x] Display LLM outputs (score, gaps, rewrites) in a clean, readable format
 - [ ] Add functionality to directly generate and write tailored PDF resumes
 - [ ] Show before and after match score comparison
 - [ ] Allow edits to LLM suggestions before generating the final PDF
@@ -85,3 +99,4 @@ streamlit run app.py
   - Resume scoring accuracy
   - Relevance and faithfulness of tailoring suggestions
 - [ ] Decide on deployment strategy (Streamlit Cloud?) and how to handle persistent local data remotely
+- [ ] Change color theme

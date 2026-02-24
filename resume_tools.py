@@ -1,4 +1,5 @@
 import os
+import json
 from dotenv import load_dotenv
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_core.documents import Document
@@ -88,11 +89,38 @@ def get_resume_change_suggestions(pdf_context: str, jd_text_context: str) -> str
     return result
 
 
-def tailor_resume(master_resume_pdf_path, job_description):
+def tailor_resume(
+    master_resume_pdf_path: str, job_description: str
+) -> tuple[dict, list]:
+    """
+    Orchestrates the full resume tailoring pipeline for a given job description.
+
+    Extracts resume and JD text, scores the resume against the JD, and generates
+    bullet point rewrite suggestions — returning both as parsed Python objects.
+
+    Args:
+        master_resume_pdf_path (str): File path to the master resume PDF.
+        job_description (str): Raw job description text.
+
+    Returns:
+        tuple[dict, list]: A tuple of (score_json, changes_list) where:
+            - score_json (dict): Parsed score response containing:
+                - score (int): Match score from 0 to 100.
+                - scoreRationale (str): 1-2 sentence explanation of the score.
+                - keywordGaps (list[str]): Keywords missing from the resume.
+            - changes_list (list[dict]): Parsed list of bullet rewrite suggestions, each containing:
+                - original (str): The original bullet point from the resume.
+                - rewritten (str): The improved, JD-aligned version.
+    """
+    # Prepare data and invoke LLM calls
     pdf_context, jd_text_context = prepare_data(master_resume_pdf_path, job_description)
     original_resume_score = get_resume_score(pdf_context, jd_text_context)
     resume_change_suggestions = get_resume_change_suggestions(
         pdf_context, jd_text_context
     )
 
-    return original_resume_score, resume_change_suggestions
+    # Convert to JSON
+    score_json = json.loads(original_resume_score)
+    changes_list = json.loads(resume_change_suggestions)
+
+    return score_json, changes_list
