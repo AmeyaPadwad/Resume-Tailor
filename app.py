@@ -13,9 +13,24 @@ config()
 
 # ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(page_title="Resume Tailor", layout="wide")
+st.markdown(
+    """
+    <style>
+        .block-container {
+            padding-top: 1rem;
+        }
+    </style>
+""",
+    unsafe_allow_html=True,
+)
 st.title("Resume Tailor")
+
+# Adding keys for field clearing
 if "ref_form_key" not in st.session_state:
     st.session_state.ref_form_key = 0
+
+if "job_form_key" not in st.session_state:
+    st.session_state.job_form_key = 0
 
 tab1, tab2, tab3, tab4 = st.tabs(
     [

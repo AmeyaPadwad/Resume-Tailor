@@ -26,22 +26,25 @@ def render():
     with st.expander("➕ Add New Referral", expanded=False):
         r_col1, r_col2 = st.columns(2)
         with r_col1:
-            r_company = st.text_input(
-                "Company",
-                placeholder="e.g. Apple",
-                key=f"r_company_{st.session_state.ref_form_key}",
-            )
-            r_contact = st.text_input(
-                "Contact At",
-                placeholder="e.g. LinkedIn, Email, Phone, Whatsapp",
-                key=f"r_contact_{st.session_state.ref_form_key}",
-            )
-        with r_col2:
             r_name = st.text_input(
                 "Referral Name",
                 placeholder="e.g. Jane Doe",
                 key=f"r_name_{st.session_state.ref_form_key}",
             )
+
+            r_company = st.text_input(
+                "Company",
+                placeholder="e.g. Apple",
+                key=f"r_company_{st.session_state.ref_form_key}",
+            )
+
+        with r_col2:
+            r_contact = st.text_input(
+                "Contact At",
+                placeholder="e.g. LinkedIn, Email, Phone, Whatsapp",
+                key=f"r_contact_{st.session_state.ref_form_key}",
+            )
+
             r_notes = st.text_input(
                 "Notes",
                 placeholder="",

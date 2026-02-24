@@ -4,7 +4,9 @@ import pandas as pd
 # ── Constants ──────────────────────────────────────────────────────────────────
 data_dir = "data"
 resume_dir = os.path.join(data_dir, "resumes")
-master_pdf_path = os.path.join(resume_dir, "master_resume.pdf")
+master_resume_docx_path = os.path.join(resume_dir, "master_resume.docx")
+master_resume_pdf_path = os.path.join(resume_dir, "master_resume.pdf")
+tailored_dir = os.path.join(resume_dir, "tailored")
 jobs_csv = os.path.join(data_dir, "jobs.csv")
 referrals_csv = os.path.join(data_dir, "referrals.csv")
 
@@ -32,7 +34,9 @@ JOB_DATA_COLUMNS = [
 PATHS = {
     "DATA_DIR": data_dir,
     "RESUME_DIR": resume_dir,
-    "MASTER_PDF_PATH": master_pdf_path,
+    "MASTER_RESUME_DOCX_PATH": master_resume_docx_path,
+    "MASTER_RESUME_PDF_PATH": master_resume_pdf_path,
+    "TAILORED_DIR": tailored_dir,
     "JOBS_CSV": jobs_csv,
     "REFERRALS_CSV": referrals_csv,
 }
@@ -45,6 +49,9 @@ def config():
 
     # 2. Make resume directory
     os.makedirs(resume_dir, exist_ok=True)
+
+    # 3. Make tailored directory
+    os.makedirs(tailored_dir, exist_ok=True)
 
 
 def load_jobs():

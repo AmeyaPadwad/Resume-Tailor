@@ -1,21 +1,34 @@
 import os
 import json
 from dotenv import load_dotenv
+
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_core.documents import Document
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+
 from prompts import resume_score_prompt, resume_tailor_prompt
+from config import PATHS
+from pdf_tools import docx_to_pdf, copy_docx, apply_changes_to_docx
 
 # Loading Environment Variables
 load_dotenv()
 os.environ["GROQ_API_KEY"] = os.getenv("GROQ_API_KEY")
 
+# Loading config constants
+MASTER_RESUME_DOCX_PATH = PATHS["MASTER_RESUME_DOCX_PATH"]
+MASTER_RESUME_PDF_PATH = PATHS["MASTER_RESUME_PDF_PATH"]
+RESUME_DIR = PATHS["RESUME_DIR"]
+TAILORED_DIR = PATHS["TAILORED_DIR"]
+
 # Loading Model
 MODEL = "llama-3.1-8b-instant"
 LLM = ChatGroq(
-    model="llama-3.1-8b-instant", api_key=os.environ["GROQ_API_KEY"], temperature=0
+    model="llama-3.1-8b-instant",
+    api_key=os.environ["GROQ_API_KEY"],
+    temperature=0,
+    model_kwargs={"response_format": {"type": "json_object"}},
 )
 
 
@@ -89,8 +102,77 @@ def get_resume_change_suggestions(pdf_context: str, jd_text_context: str) -> str
     return result
 
 
+def get_tailored_resume_path(job_id: int, company: str, title: str) -> str:
+    """
+    Generate a standardised file path for a tailored resume with the format {jobid}_{company}_{title}.docx.
+
+    Args:
+        job_id (int): The job ID from jobs.csv.
+        company (str): Company name.
+        title (str): Job title.
+
+    Returns:
+        str: file path e.g. /path/to/tailored/001_google_software_engineer.docx
+    """
+
+    filename = f"{job_id:03d}_{company}_{title}.docx"
+    filepath = os.path.join(TAILORED_DIR, filename)
+
+    return filepath
+
+
+def edit_resume(
+    changes: list[dict],
+    job_id: int,
+    company: str,
+    title: str,
+) -> str:
+    """
+    Apply LLM-suggested bullet rewrites while preserving formatting, and export back to PDF.
+
+    Args:
+        changes (list[dict]): List of {original, rewritten} dicts from the LLM.
+        job_id (int): The job ID from jobs.csv.
+        company (str): Company name.
+        title (str): Job title.
+
+
+    Returns:
+        output_pdf_path (str): Destination path for the tailored .pdf file.
+
+    Raises:
+        RuntimeError: If docx to pdf conversion or PDF export fails.
+    """
+    if not os.path.exists(MASTER_RESUME_DOCX_PATH):
+        raise FileNotFoundError(
+            f"Master resume docx not found: {MASTER_RESUME_DOCX_PATH}"
+        )
+
+    # Step 1: Get tailored resume .docx path
+    tailored_resume_docx_path = get_tailored_resume_path(job_id, company, title)
+
+    # Step 2: Copy master resume docx to tailored resume path as the tailored resume file name
+    copy_docx(MASTER_RESUME_DOCX_PATH, tailored_resume_docx_path)
+
+    # Step 3: Apply LLM changes to the converted .docx
+    apply_changes_to_docx(tailored_resume_docx_path, changes)
+
+    # Step 4: Convert .docx to .pdf
+    tailored_resume_pdf_path = tailored_resume_docx_path.replace(".docx", ".pdf")
+    docx_to_pdf(tailored_resume_docx_path, tailored_resume_pdf_path)
+
+    # Step 5: Always clean up the temp files
+    if os.path.exists(tailored_resume_docx_path):
+        os.remove(tailored_resume_docx_path)
+
+    return tailored_resume_pdf_path
+
+
 def tailor_resume(
-    master_resume_pdf_path: str, job_description: str
+    job_description: str,
+    job_id: int,
+    company: str,
+    title: str,
 ) -> tuple[dict, list]:
     """
     Orchestrates the full resume tailoring pipeline for a given job description.
@@ -99,8 +181,10 @@ def tailor_resume(
     bullet point rewrite suggestions — returning both as parsed Python objects.
 
     Args:
-        master_resume_pdf_path (str): File path to the master resume PDF.
         job_description (str): Raw job description text.
+        job_id (int): The job ID from jobs.csv.
+        company (str): Company name.
+        title (str): Job title.
 
     Returns:
         tuple[dict, list]: A tuple of (score_json, changes_list) where:
@@ -113,7 +197,7 @@ def tailor_resume(
                 - rewritten (str): The improved, JD-aligned version.
     """
     # Prepare data and invoke LLM calls
-    pdf_context, jd_text_context = prepare_data(master_resume_pdf_path, job_description)
+    pdf_context, jd_text_context = prepare_data(MASTER_RESUME_PDF_PATH, job_description)
     original_resume_score = get_resume_score(pdf_context, jd_text_context)
     resume_change_suggestions = get_resume_change_suggestions(
         pdf_context, jd_text_context
@@ -123,4 +207,7 @@ def tailor_resume(
     score_json = json.loads(original_resume_score)
     changes_list = json.loads(resume_change_suggestions)
 
-    return score_json, changes_list
+    # Make edits to master resume
+    tailored_resume_path = edit_resume(changes_list, job_id, company, title)
+
+    return score_json, changes_list, tailored_resume_path

@@ -20,7 +20,7 @@ Resume Tailor is a Streamlit-based desktop app that combines keyword matching an
 
 ## How to Use
 
-1. **Master Resume tab** — Upload your resume as a PDF. This becomes the base for all tailoring.
+1. **Master Resume tab** — Upload your resume as a docx. This becomes the base for all tailoring.
 2. **Add Job Description tab** — Paste a job description along with the company name and job title. Hit:
    - `Save Job` to log the application
    - `Tailor Resume` to get an AI match score, keyword gaps, and suggested bullet rewrites
@@ -33,10 +33,12 @@ The data is stored in the following structure in the root directory:
 root/
 └── data/
     ├── resumes/
+    │   ├── master_resume.docx
     │   ├── master_resume.pdf
-    │   ├── tailored_resume_1.pdf
-    │   ├── tailored_resume_2.pdf
-    │   └── ...
+        ├── tailored/
+    │   │   ├── tailored_resume_1.pdf
+    │   │   ├── tailored_resume_2.pdf
+    │   │   └── ...
     ├── jobs.csv
     └── referrals.csv
 ```
@@ -81,16 +83,24 @@ streamlit run app.py
 
 ## Tasks To Be Completed
 
-### Add Job Description Tab
+### Resume Tailoring Tab
 
-- [ ] Clear text fields after form submission
+- [x] Clear text fields after form submission
 - [x] Display LLM outputs (score, gaps, rewrites) in a clean, readable format
-- [ ] Add functionality to directly generate and write tailored PDF resumes
+- [x] Add flag for job postings that mention no visa sponsorship
+- [x] Add functionality to directly generate and write tailored PDF resumes
+- [x] Design indexing logic for storing and referencing tailored PDFs
 - [ ] Show before and after match score comparison
 - [ ] Allow edits to LLM suggestions before generating the final PDF
-- [ ] Design indexing logic for storing and referencing tailored PDFs
-- [ ] Add flag for job postings that mention no visa sponsorship
 - [ ] Add validation to warn if resume exceeds one page
+- [ ] Add stored tailored resume path to job tracking database
+- [ ] Clear match scores, keyword gaps and tailored resume after save job button is clicked
+- [ ] Add download button to download resume
+- [ ] Pressing the download button should make the edited text in the tailored resume black, and also updated the tailored resume saved in ./tailred directory
+
+### Job Tracking Tab
+
+- [] Also store the match scores for each job
 
 ### Project
 

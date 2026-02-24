@@ -1,7 +1,7 @@
 def score_card_style(origial_score, score_rationale):
     return f"""
                 <div style="
-                    background:#f8f9fb;
+                    background:#ffffff;
                     border-radius:12px;
                     padding:20px 24px;
                     margin-bottom:16px;
